@@ -1,3 +1,10 @@
+
+
+void switchPlayer() {
+    if (currentPlayer == 'X') currentPlayer = 'O';
+    else currentPlayer = 'X';
+}
+
 int main() {
     int row, col;
     currentPlayer = 'X';
