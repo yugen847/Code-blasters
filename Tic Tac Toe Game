@@ -1,0 +1,27 @@
+int main() {
+    int row, col;
+    currentPlayer = 'X';
+    initializeBoard();
+    while (1) {
+        printBoard();
+        printf("Player %c, enter row and column (0-2): ", currentPlayer);
+        scanf("%d %d", &row, &col);
+        if (row < 0 || row > 2 || col < 0 || col > 2 || board[row][col] != ' ') {
+            printf("Invalid move. Try again.\n");
+            continue;
+        }
+        board[row][col] = currentPlayer;
+        if (checkWin()) {
+            printBoard();
+            printf("Player %c wins!\n", currentPlayer);
+            break;
+        }
+        if (isBoardFull()) {
+            printBoard();
+            printf("It's a draw!\n");
+            break;
+        }
+        switchPlayer();
+    }
+    return 0;
+}
