@@ -2,7 +2,6 @@
 #include <stdlib.h>
 
 char board[3][3];
-char currentPlayer;
 int player1Wins = 0, player2Wins = 0, totalRounds;
 
 void initializeBoard() {
@@ -14,11 +13,11 @@ void initializeBoard() {
 }
 
 void printBoard() {
-printf(" %c | %c | %c \n", board[0][0], board[0][1], board[0][2]); 
-printf("---|---|---\n"); 
-printf(" %c | %c | %c \n", board[1][0], board[1][1], board[1][2]); 
-printf("---|---|---\n"); 
-printf(" %c | %c | %c \n", board[2][0], board[2][1], board[2][2]);
+    printf(" %c | %c | %c \n", board[0][0], board[0][1], board[0][2]); 
+    printf("---|---|---\n"); 
+    printf(" %c | %c | %c \n", board[1][0], board[1][1], board[1][2]);
+    printf("---|---|---\n");
+    printf(" %c | %c | %c \n", board[2][0], board[2][1], board[2][2]);
 }
 
 int checkWin() {
@@ -40,35 +39,37 @@ int isBoardFull() {
     return 1;
 }
 
-void switchPlayer() {
-    if (currentPlayer == 'X') currentPlayer = 'O';
-    else currentPlayer = 'X';
-}
-
 int getValidInput() {
     int row, col;
     while (1) {
         if (scanf("%d %d", &row, &col) != 2) {
             // Clear the input buffer (discard the remaining invalid input)
             while (getchar() != '\n');  // Consume the invalid characters up to newline
-            printf("Invalid input. Please enter integers (0-2) for row and column.\n");
+            printf("Invalid input.\n Please enter integers (0-2) for row and column.\n");
             continue;
         }
         if (row < 0 || row > 2 || col < 0 || col > 2) {
-            printf("Invalid input. Row and column must be between 0 and 2.\n");
+            printf("Invalid input.\n Row and column must be between 0 and 2.\n");
             continue;
         }
         return row * 10 + col;  // Return row and col encoded in a single integer
     }
 }
 
-void playRound() {
+void switchPlayer(char* currentPlayer) {
+    if (*currentPlayer == 'X') *currentPlayer = 'O';
+    else *currentPlayer = 'X';
+}
+
+void playRound(int round, char player1Choice, char player2Choice) {
     int row, col;
+    char currentPlayer = player1Choice;
     initializeBoard();
+
     while (1) {
         printBoard();
         printf("Player %c, enter row and column (0-2): ", currentPlayer);
-        
+
         int input = getValidInput();
         row = input / 10;
         col = input % 10;
@@ -77,21 +78,24 @@ void playRound() {
             printf("Invalid move. Try again.\n");
             continue;
         }
-        
+
         board[row][col] = currentPlayer;
+
         if (checkWin()) {
             printBoard();
             printf("Player %c wins this round!\n", currentPlayer);
-            if (currentPlayer == 'X') player1Wins++;
+            if (currentPlayer == player1Choice) player1Wins++;
             else player2Wins++;
             break;
         }
+
         if (isBoardFull()) {
             printBoard();
             printf("This round is a draw!\n");
             break;
         }
-        switchPlayer();
+
+        switchPlayer(&currentPlayer);
     }
 }
 
@@ -102,10 +106,24 @@ int getValidRoundsInput() {
         if (scanf("%d", &rounds) != 1 || rounds <= 0) {
             // Clear the input buffer (discard the remaining invalid input)
             while (getchar() != '\n');  // Consume the invalid characters up to newline
-            printf("Invalid input. Please enter a positive integer for the number of rounds.\n");
+            printf("Invalid input.\n Please enter a positive integer for the number of rounds.\n");
         } else {
             return rounds;  // Return the valid rounds input
         }
+    }
+}
+
+void getPlayerChoices(char* player1Choice, char* player2Choice) {
+    while (1) {
+        printf("Player 1, choose your symbol (X/O): ");
+        if (scanf(" %c", player1Choice) != 1 || (*player1Choice != 'X' && *player1Choice != 'O')) {
+            printf("Invalid choice. Please choose 'X' or 'O'.\n");
+            while (getchar() != '\n');  // Clear the buffer
+            continue;
+        }
+        // Player 2 will automatically get the other symbol
+        *player2Choice = (*player1Choice == 'X') ? 'O' : 'X';
+        break;
     }
 }
 
@@ -114,30 +132,23 @@ int main() {
 
     for (int round = 1; round <= totalRounds; round++) {
         printf("\nRound %d\n", round);
-        currentPlayer = 'X'; // Reset the starting player for each round
-        playRound();
+
+        char player1Choice, player2Choice;
+        getPlayerChoices(&player1Choice, &player2Choice);  // Let players choose their symbols
+
+        playRound(round, player1Choice, player2Choice);  // Play the round with chosen symbols
     }
 
     printf("\nGame over!\n");
     printf("Player 1 wins: %d\n", player1Wins);
     printf("Player 2 wins: %d\n", player2Wins);
 
-    if (totalRounds % 2 == 0) {
-        if (player1Wins == player2Wins) {
-            printf("The round ends in a draw!\n");
-        } else if (player1Wins > player2Wins) {
-            printf("Player 1 wins the most rounds and is the overall winner!\n");
-        } else {
-            printf("Player 2 wins the most rounds and is the overall winner!\n");
-        }
+    if (player1Wins > player2Wins) {
+        printf("Player 1 wins the most rounds and is the overall winner!\n");
+    } else if (player2Wins > player1Wins) {
+        printf("Player 2 wins the most rounds and is the overall winner!\n");
     } else {
-        if (player1Wins > player2Wins) {
-            printf("Player 1 wins the most rounds and is the overall winner!\n");
-        } else if (player2Wins > player1Wins) {
-            printf("Player 2 wins the most rounds and is the overall winner!\n");
-        } else {
-            printf("It's a draw!\n");
-        }
+        printf("It's a draw!\n");
     }
 
     return 0;
