@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 char board[3][3];
 int player1Wins = 0, player2Wins = 0, totalRounds;
+char player1Name[50], player2Name[50];  // Arrays to store player names
 
 void initializeBoard() {
     for (int i = 0; i < 3; i++) {
@@ -68,7 +70,7 @@ void playRound(int round, char player1Choice, char player2Choice) {
 
     while (1) {
         printBoard();
-        printf("Player %c, enter row and column (0-2): ", currentPlayer);
+        printf("%s (Player %c), enter row and column (0-2): ", (currentPlayer == player1Choice) ? player1Name : player2Name, currentPlayer);
 
         int input = getValidInput();
         row = input / 10;
@@ -83,7 +85,7 @@ void playRound(int round, char player1Choice, char player2Choice) {
 
         if (checkWin()) {
             printBoard();
-            printf("Player %c wins this round!\n", currentPlayer);
+            printf("%s (Player %c) wins this round!\n", (currentPlayer == player1Choice) ? player1Name : player2Name, currentPlayer);
             if (currentPlayer == player1Choice) player1Wins++;
             else player2Wins++;
             break;
@@ -113,9 +115,16 @@ int getValidRoundsInput() {
     }
 }
 
+void getPlayerNames() {
+    printf("Enter Player 1's name: ");
+    scanf(" %[^\n]%*c", player1Name);  // Reading names with spaces
+    printf("Enter Player 2's name: ");
+    scanf(" %[^\n]%*c", player2Name);  // Reading names with spaces
+}
+
 void getPlayerChoices(char* player1Choice, char* player2Choice) {
     while (1) {
-        printf("Player 1, choose your symbol (X/O): ");
+        printf("%s, choose your symbol (X/O): ", player1Name);
         if (scanf(" %c", player1Choice) != 1 || (*player1Choice != 'X' && *player1Choice != 'O')) {
             printf("Invalid choice. Please choose 'X' or 'O'.\n");
             while (getchar() != '\n');  // Clear the buffer
@@ -128,7 +137,9 @@ void getPlayerChoices(char* player1Choice, char* player2Choice) {
 }
 
 int main() {
-    totalRounds = getValidRoundsInput();  // Get a valid input for number of rounds
+    getPlayerNames();  // Get the names of the players
+
+    totalRounds = getValidRoundsInput();  // Get a valid input for the number of rounds
 
     for (int round = 1; round <= totalRounds; round++) {
         printf("\nRound %d\n", round);
@@ -140,13 +151,13 @@ int main() {
     }
 
     printf("\nGame over!\n");
-    printf("Player 1 wins: %d\n", player1Wins);
-    printf("Player 2 wins: %d\n", player2Wins);
+    printf("%s wins: %d\n", player1Name, player1Wins);
+    printf("%s wins: %d\n", player2Name, player2Wins);
 
     if (player1Wins > player2Wins) {
-        printf("Player 1 wins the most rounds and is the overall winner!\n");
+        printf("%s wins the most rounds and is the overall winner!\n", player1Name);
     } else if (player2Wins > player1Wins) {
-        printf("Player 2 wins the most rounds and is the overall winner!\n");
+        printf("%s wins the most rounds and is the overall winner!\n", player2Name);
     } else {
         printf("It's a draw!\n");
     }
