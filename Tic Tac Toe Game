@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 char board[3][3];
 char currentPlayer;
+int player1Wins = 0, player2Wins = 0, totalRounds;
 
 void initializeBoard() {
     for (int i = 0; i < 3; i++) {
@@ -21,6 +23,7 @@ void printBoard() {
         if (i < 2) printf("-----\n");
     }
 }
+
 int checkWin() {
     for (int i = 0; i < 3; i++) {
         if (board[i][0] == board[i][1] && board[i][1] == board[i][2] && board[i][0] != ' ') return 1;
@@ -45,30 +48,100 @@ void switchPlayer() {
     else currentPlayer = 'X';
 }
 
-int main() {
+int getValidInput() {
     int row, col;
-    currentPlayer = 'X';
+    while (1) {
+        if (scanf("%d %d", &row, &col) != 2) {
+            // Clear the input buffer (discard the remaining invalid input)
+            while (getchar() != '\n');  // Consume the invalid characters up to newline
+            printf("Invalid input. Please enter integers (0-2) for row and column.\n");
+            continue;
+        }
+        if (row < 0 || row > 2 || col < 0 || col > 2) {
+            printf("Invalid input. Row and column must be between 0 and 2.\n");
+            continue;
+        }
+        return row * 10 + col;  // Return row and col encoded in a single integer
+    }
+}
+
+void playRound() {
+    int row, col;
     initializeBoard();
     while (1) {
         printBoard();
         printf("Player %c, enter row and column (0-2): ", currentPlayer);
-        scanf("%d %d", &row, &col);
-        if (row < 0 || row > 2 || col < 0 || col > 2 || board[row][col] != ' ') {
+        
+        int input = getValidInput();
+        row = input / 10;
+        col = input % 10;
+
+        if (board[row][col] != ' ') {
             printf("Invalid move. Try again.\n");
             continue;
         }
+        
         board[row][col] = currentPlayer;
         if (checkWin()) {
             printBoard();
-            printf("Player %c wins!\n", currentPlayer);
+            printf("Player %c wins this round!\n", currentPlayer);
+            if (currentPlayer == 'X') player1Wins++;
+            else player2Wins++;
             break;
         }
         if (isBoardFull()) {
             printBoard();
-            printf("It's a draw!\n");
+            printf("This round is a draw!\n");
             break;
         }
         switchPlayer();
     }
+}
+
+int getValidRoundsInput() {
+    int rounds;
+    while (1) {
+        printf("Enter the number of rounds to play: ");
+        if (scanf("%d", &rounds) != 1 || rounds <= 0) {
+            // Clear the input buffer (discard the remaining invalid input)
+            while (getchar() != '\n');  // Consume the invalid characters up to newline
+            printf("Invalid input. Please enter a positive integer for the number of rounds.\n");
+        } else {
+            return rounds;  // Return the valid rounds input
+        }
+    }
+}
+
+int main() {
+    totalRounds = getValidRoundsInput();  // Get a valid input for number of rounds
+
+    for (int round = 1; round <= totalRounds; round++) {
+        printf("\nRound %d\n", round);
+        currentPlayer = 'X'; // Reset the starting player for each round
+        playRound();
+    }
+
+    printf("\nGame over!\n");
+    printf("Player 1 wins: %d\n", player1Wins);
+    printf("Player 2 wins: %d\n", player2Wins);
+
+    if (totalRounds % 2 == 0) {
+        if (player1Wins == player2Wins) {
+            printf("The round ends in a draw!\n");
+        } else if (player1Wins > player2Wins) {
+            printf("Player 1 wins the most rounds and is the overall winner!\n");
+        } else {
+            printf("Player 2 wins the most rounds and is the overall winner!\n");
+        }
+    } else {
+        if (player1Wins > player2Wins) {
+            printf("Player 1 wins the most rounds and is the overall winner!\n");
+        } else if (player2Wins > player1Wins) {
+            printf("Player 2 wins the most rounds and is the overall winner!\n");
+        } else {
+            printf("It's a draw!\n");
+        }
+    }
+
     return 0;
 }
